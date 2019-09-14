@@ -1,0 +1,112 @@
+1. 创建版本库
+    $ git init [选择工作区目录，设置版本库]
+>>> Initialized empty Git repository in ...{选择的文件夹目录}
+2. 添加文件到版本库
+    $ git add ...[文件名，必须在版本库根目录及其子目录之下]
+    $ git commit -m ...{文档描述，辨别不同操作的重要信息}
+3. 查看工作区文本状态
+    $ git status [查看工作区和暂存区状态：文档修改、提交、删除等信息]
+>>> ...[如果有修改发生，Git会提示可以commit提交、checkout放弃修改、add放入暂存区、rm删除文件等]
+>>> ...
+    $ git diff [查看当前工作区与暂存区文件内容的差异]
+4. 版本回退
+    $ git log [查看当前版本及其时间轴之前的版本记录日志]
+    $ git log --pretty=online [添加参数可以单行精简输出信息]
+>>> 1094adb7b9b3807259d8cb349e7df1d4d6477073 (HEAD -> master)...{文档描述} [当前版本，数字为版本号]
+>>> e475afc93c209a690c39c13a46716e8fa000c366 ...{文档描述} [历史版本1，数字为版本号]
+>>> ...{更多历版本}
+    $ git reset --hard HEAD^ [HEAD表示当前版本，每有1个"^"回退到表示上1个版本]
+>>> HEAD is now at ...{版本号缩写} ...{对应版本的文档描述}
+    $ git reset --hard ...{选择要回退的版本号，可缩写，如：9475a即可找到对应版本}
+    [版本回退到旧版本后，再用 git log 将不再显示其之后的版本，就像穿越，时间轴也被拉回旧版本]
+    $ git reflog
+>>> e475afc (HEAD -> master) HEAD@{1}: reset: ...{文档描述} [当前版本]
+>>> 1094adb HEAD@{2}: commit: ...{文档描述}
+>>> e475afc HEAD@{3}: ...{文档描述}
+>>> eaadf4e HEAD@{4}: commit (initial): ...{文档描述} [版本库的初始化操作]
+    $ git reset --hard 1094a [恢复到“未来”版本]
+    [注意观察上面reflog的版本号，reflog记录每次提交的版本，以便回溯]
+5. 工作区和暂存区与版本库的概念
+    [https://www.liaoxuefeng.com/wiki/896043488029600/897271968352576]
+6. 管理修改
+    $ cat ...{文件名} [linux指令，获取文件内容]
+    [git add 可以理解为暂时保存每次修改，git commit 命令则是将这些修改永久保存，并创建成一个新的库内容的版本]
+    $ git diff HEAD -- ...{文件名} [使用"HEAD -- <file>"参数可以对比工作区和版本库里当前版本中"file"的区别]
+7. 撤销修改
+    $ git checkout -- ...{文件名} [将文件回退到最近一次git commit/add 之后的状态]
+    $ git reset HEAD <file> [可以将暂存区的文件修改撤销(unstage)，并重新放回工作区]
+>>> Unstaged changes after reset:
+>>> ...{文本信息} [此操作将文件回溯到add前的状态，且不可再恢复]
+    [git reset命令既可以回退版本，也可以把暂存区的修改回退到工作区。当我们用HEAD时，表示最新的版本。]
+8. 删除文件
+    $ rm <file> [linux指令，删除文件，也可以在目录中手动删除]
+    $ git rm <file> [在将file从版本库删除,如果未先手动文件，则此操作会自动删除]
+>>> rm 'file'
+    [如果已经手动删除了文件file，则git add 和 git rm 效果一样]
+    $ git add <file>
+    $ git commit -m ...{操作相关描述} [将删除提交到库]
+    [如果误删了文件，可以从版本库中恢复到版本库中的最新版本]
+    $ git checkout -- <file>
+    [git checkout其实是用版本库里的版本替换工作区的版本，无论工作区是修改还是删除，都可以“一键还原”。]
+    [命令git rm用于删除一个文件。如果一个文件已经被提交到版本库，那么你永远不用担心误删，但是要小心，你只能恢复文件到最新版本，你会丢失最近一次提交后你修改的内容。]
+9. 远程仓库[Github]
+    [第1步：创建SSH Key。]
+    $ ssh-keygen -t rsa -C "youremail@example.com" [生成id_rsa 和 id_rsa.pub 两个文件]
+    [如果已经有了SSH Key，这一步可以跳过]
+    [如果一切顺利的话，可以在用户主目录里找到.ssh目录，里面有id_rsa和id_rsa.pub两个文件，这两个就是SSH Key的秘钥对，id_rsa是私钥，不能泄露出去，id_rsa.pub是公钥，可以放心地告诉任何人，以便连到本地版本库。]
+    [第2步：登陆GitHub，打开"Account settings"->"SSH Keys"->"Add SSH Key"，粘贴id_rsa.pub文件的内容]
+10. 添加远程库
+    $ git remote add origin <SSHdir> [将本地库关联到远程库]
+    $ git push -u origin master [把本地库的所有内容推送到远程库上]
+    [把本地库的内容推送到远程，用git push命令，实际上是把当前分支master推送到远程。]
+    [由于远程库是空的，我们第一次推送master分支时，加上了-u参数，Git不但会把本地的master分支内容推送的远程新的master分支，还会把本地的master分支和远程的master分支关联起来，在以后的推送或者拉取时就可以简化命令。]
+    $ git push origin master [第一次推送之后，每次提交可以简化推送]
+    [SSH 警告]
+    [当你第一次使用Git的clone或者push命令连接GitHub时，会得到一个警告：]
+>>> The authenticity of host 'github.com (xx.xx.xx.xx)' can't be established.
+>>> RSA key fingerprint is xx.xx.xx.xx.xx.
+>>> Are you sure you want to continue connecting (yes/no)?
+    [这是因为Git使用SSH连接，而SSH连接在第一次验证GitHub服务器的Key时，需要你确认GitHub的Key的指纹信息是否真的来自GitHub的服务器，输入yes回车即可。]
+    [Git会输出一个警告，告诉你已经把GitHub的Key添加到本机的一个信任列表里了：]
+>>> Warning: Permanently added 'github.com' (RSA) to the list of known hosts.
+    [这个警告只会出现一次，后面的操作就不会有任何警告了。]
+    [如果你实在担心有人冒充GitHub服务器，输入yes前可以对照GitHub的RSA Key的指纹信息是否与SSH连接给出的一致:]
+    [https://help.github.com/articles/what-are-github-s-ssh-key-fingerprints/]
+11. 从远程库克隆
+    [克隆前先选择一个存放远程库的工作区]
+    $ git clone <SSHdir>
+    [要克隆一个仓库，首先必须知道仓库的地址，然后使用git clone命令克隆。]
+    [Git支持多种协议，包括https，但通过ssh支持的原生git协议速度最快。]
+12. 分支管理
+    $ git checkout -b dev [创建分支dev，然后切换到dev分支]
+>>> Switched to a new branch 'dev'
+    [git checkout命令加上-b参数表示创建并切换，相当于以下两条命令：]
+    $ git branch dev
+    $ git checkout dev
+>>> Switched to branch 'dev'
+    [用git branch命令查看当前分支]
+    $ git branch
+>>> * dev
+>>>   master
+	[git branch命令会列出所有分支，当前分支前面会标一个*号。]
+	$ git checkout master [切换回master分支]
+	$ git merge dev [把dev分支的工作成果合并到当前分支(master)上]
+>>> Updating ...{版本号}
+>>> Fast-forward [Fast-forward信息，Git告诉我们，这次合并是“快进模式”，即直接把master指向dev的当前提交(没有冲突)]
+>>> ...{更新信息}
+	[合并完成后，就可以放心地删除dev分支了：]
+	$ git branch -d dev
+>>> Deleted branch dev (was b17d20e[版本号]).
+	[switch]
+	[创建并切换到新的dev分支：]
+	$ git switch -c dev
+	[直接切换到已有的master分支：]
+	$ git switch master
+	[使用新的git switch命令，比git checkout要更容易理解。]
+	[Git鼓励大量使用分支：]
+	[查看分支：git branch]
+	[创建分支：git branch <name>]
+	[切换分支：git checkout <name>或者git switch <name>]
+	[创建+切换分支：git checkout -b <name>或者git switch -c <name>]
+	[合并某分支到当前分支：git merge <name>]
+	[删除分支：git branch -d <name>]
